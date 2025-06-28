@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -7,6 +6,7 @@
 </head>
 <body>
   <h2>Tính tiền chênh lệch nhân viên</h2>
+
   <label for="name">Tên nhân viên:</label>
   <input type="text" id="name"><br><br>
 
@@ -15,6 +15,12 @@
 
   <label for="end">Giờ ra:</label>
   <input type="time" id="end"><br><br>
+
+  <label for="customAmount">Hoặc nhập trực tiếp số tiền làm được (VND):</label>
+  <input type="number" id="customAmount" placeholder="Không bắt buộc"><br><br>
+
+  <label for="rate">Lương theo giờ (VND):</label>
+  <input type="number" id="rate" placeholder="Mặc định: 200000"><br><br>
 
   <button onclick="tinhLuong()">Tính lương</button>
 
@@ -25,30 +31,45 @@
       const name = document.getElementById('name').value;
       const start = document.getElementById('start').value;
       const end = document.getElementById('end').value;
+      const rateInput = document.getElementById('rate').value;
+      const customAmountInput = document.getElementById('customAmount').value;
 
-      if (!start || !end || !name) {
-        alert('Vui lòng nhập đầy đủ thông tin.');
+      if (!name) {
+        alert('Vui lòng nhập tên nhân viên.');
         return;
       }
 
-      const [startHour, startMinute] = start.split(':').map(Number);
-      const [endHour, endMinute] = end.split(':').map(Number);
+      const hourlyRate = rateInput ? parseFloat(rateInput) : 200000;
+      let totalSalary = 0;
+      let workedHours = null;
 
-      const startTotalMinutes = startHour * 60 + startMinute;
-      const endTotalMinutes = endHour * 60 + endMinute;
+      // Nếu có nhập số tiền, ưu tiên dùng
+      if (customAmountInput) {
+        totalSalary = parseFloat(customAmountInput);
+      } else {
+        // Nếu không có tiền nhập, dùng thời gian để tính
+        if (!start || !end) {
+          alert('Vui lòng nhập giờ vào và giờ ra hoặc nhập số tiền.');
+          return;
+        }
 
-      const workedMinutes = endTotalMinutes - startTotalMinutes;
-      const workedHours = workedMinutes / 60;
+        const [startHour, startMinute] = start.split(':').map(Number);
+        const [endHour, endMinute] = end.split(':').map(Number);
 
-      const hourlyRate = 200000; // Lương theo giờ
-      const totalSalary = workedHours * hourlyRate;
+        const startTotalMinutes = startHour * 60 + startMinute;
+        const endTotalMinutes = endHour * 60 + endMinute;
+
+        const workedMinutes = endTotalMinutes - startTotalMinutes;
+        workedHours = workedMinutes / 60;
+        totalSalary = workedHours * hourlyRate;
+      }
 
       const employeeKeep = totalSalary * 0.65;
       const returnToYou = totalSalary * 0.35;
 
       document.getElementById('result').innerHTML = `
         <strong>Kết quả cho: ${name}</strong><br>
-        Thời gian làm: ${workedHours.toFixed(2)} giờ<br>
+        ${workedHours !== null ? `Thời gian làm: ${workedHours.toFixed(2)} giờ<br>` : ''}
         Tổng lương: ${totalSalary.toLocaleString()} VND<br>
         Trả lại bạn: ${returnToYou.toLocaleString()} VND<br>
         Nhân viên được giữ: ${employeeKeep.toLocaleString()} VND
