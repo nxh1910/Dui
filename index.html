@@ -2,7 +2,19 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Tính tiền chênh lệch nhân viên</title>
+  <title>Lịch sử tính lương nhân viên</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
   <h2>Tính tiền chênh lệch nhân viên</h2>
@@ -16,19 +28,35 @@
   <label for="end">Giờ ra:</label>
   <input type="time" id="end"><br><br>
 
-  <label for="customAmount">Hoặc nhập trực tiếp số tiền làm được (VND):</label>
-  <input type="number" id="customAmount" placeholder="Không bắt buộc"><br><br>
+  <label for="customAmount">Hoặc nhập tiền làm được (×1000 VND):</label>
+  <input type="number" id="customAmount" placeholder="VD: 350 = 350.000"><br><br>
 
-  <label for="rate">Lương theo giờ (VND):</label>
-  <input type="number" id="rate" placeholder="Mặc định: 200000"><br><br>
+  <label for="rate">Lương theo giờ (×1000 VND):</label>
+  <input type="number" id="rate" placeholder="Mặc định: 200 = 200.000"><br><br>
 
   <button onclick="tinhLuong()">Tính lương</button>
 
-  <div id="result" style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;"></div>
+  <div id="result" style="margin-top: 20px;"></div>
+
+  <h3>Lịch sử làm việc</h3>
+  <table id="historyTable">
+    <thead>
+      <tr>
+        <th>Tên</th>
+        <th>Giờ vào</th>
+        <th>Giờ ra</th>
+        <th>Giờ làm</th>
+        <th>Tổng lương</th>
+        <th>Bạn giữ</th>
+        <th>NV giữ</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
     function tinhLuong() {
-      const name = document.getElementById('name').value;
+      const name = document.getElementById('name').value.trim();
       const start = document.getElementById('start').value;
       const end = document.getElementById('end').value;
       const rateInput = document.getElementById('rate').value;
@@ -39,15 +67,14 @@
         return;
       }
 
-      const hourlyRate = rateInput ? parseFloat(rateInput) : 200000;
+      const hourlyRate = rateInput ? parseFloat(rateInput) * 1000 : 200000;
       let totalSalary = 0;
       let workedHours = null;
+      let timeStart = '', timeEnd = '';
 
-      // Nếu có nhập số tiền, ưu tiên dùng
       if (customAmountInput) {
-        totalSalary = parseFloat(customAmountInput);
+        totalSalary = parseFloat(customAmountInput) * 1000;
       } else {
-        // Nếu không có tiền nhập, dùng thời gian để tính
         if (!start || !end) {
           alert('Vui lòng nhập giờ vào và giờ ra hoặc nhập số tiền.');
           return;
@@ -62,11 +89,15 @@
         const workedMinutes = endTotalMinutes - startTotalMinutes;
         workedHours = workedMinutes / 60;
         totalSalary = workedHours * hourlyRate;
+
+        timeStart = start;
+        timeEnd = end;
       }
 
       const employeeKeep = totalSalary * 0.65;
       const returnToYou = totalSalary * 0.35;
 
+      // Hiển thị kết quả ngắn gọn
       document.getElementById('result').innerHTML = `
         <strong>Kết quả cho: ${name}</strong><br>
         ${workedHours !== null ? `Thời gian làm: ${workedHours.toFixed(2)} giờ<br>` : ''}
@@ -74,6 +105,22 @@
         Trả lại bạn: ${returnToYou.toLocaleString()} VND<br>
         Nhân viên được giữ: ${employeeKeep.toLocaleString()} VND
       `;
+
+      // Thêm vào bảng lịch sử
+      const tbody = document.querySelector('#historyTable tbody');
+      const newRow = document.createElement('tr');
+
+      newRow.innerHTML = `
+        <td>${name}</td>
+        <td>${timeStart || '-'}</td>
+        <td>${timeEnd || '-'}</td>
+        <td>${workedHours !== null ? workedHours.toFixed(2) : '-'}</td>
+        <td>${totalSalary.toLocaleString()}</td>
+        <td>${returnToYou.toLocaleString()}</td>
+        <td>${employeeKeep.toLocaleString()}</td>
+      `;
+
+      tbody.appendChild(newRow);
     }
   </script>
 </body>
