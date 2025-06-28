@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Tính tiền chênh lệch</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 500px; margin: auto; }
+    label, input, button { display: block; margin: 10px 0; }
+    input { width: 100%; padding: 8px; }
+    .result { margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; }
+  </style>
+</head>
+<body>
+  <h2>Tính tiền chênh lệch nhân viên</h2>
+
+  <label>Tên nhân viên:</label>
+  <input type="text" id="name" placeholder="Nhập tên...">
+
+  <label>Giờ vào:</label>
+  <input type="time" id="startTime">
+
+  <label>Giờ ra:</label>
+  <input type="time" id="endTime">
+
+  <button onclick="tinhLuong()">Tính lương</button>
+
+  <div class="result" id="output" style="display: none;"></div>
+
+  <script>
+    function tinhLuong() {
+      const name = document.getElementById('name').value;
+      const startTime = document.getElementById('startTime').value;
+      const endTime = document.getElementById('endTime').value;
+
+      if (!name || !startTime || !endTime) {
+        alert("Vui lòng nhập đầy đủ thông tin!");
+        return;
+      }
+
+      const [startHour, startMin] = startTime.split(':').map(Number);
+      const [endHour, endMin] = endTime.split(':').map(Number);
+
+      let start = new Date();
+      start.setHours(startHour, startMin, 0);
+
+      let end = new Date();
+      end.setHours(endHour, endMin, 0);
+
+      let hoursWorked = (end - start) / (1000 * 60 * 60);
+      if (hoursWorked <= 0) {
+        alert("Giờ ra phải sau giờ vào!");
+        return;
+      }
+
+      hoursWorked = Math.round(hoursWorked * 100) / 100;
+
+      const total = hoursWorked * 200000;
+      const giveBack = hoursWorked * 70000;
+      const keep = total - giveBack;
+
+      const output = `
+        <strong>Kết quả cho: ${name}</strong><br>
+        Thời gian làm: ${hoursWorked} giờ<br>
+        Tổng lương: ${total.toLocaleString()} VND<br>
+        Trả lại bạn: ${giveBack.toLocaleString()} VND<br>
+        Nhân viên được giữ: ${keep.toLocaleString()} VND
+      `;
+
+      const resultDiv = document.getElementById('output');
+      resultDiv.innerHTML = output;
+      resultDiv.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
